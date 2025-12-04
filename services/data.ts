@@ -38,10 +38,46 @@ const BANNERS_KEY = 'swiftcart_banners_v4';
 const ADMIN_EMAILS = ['admin@flipkart.com', 'owner@flipkart.com'];
 const ADMIN_MOBILES = ['9999999999', '7891906445', '6378041283'];
 
+// --- BANNER FUNCTIONS ---
+
+export const fetchBanners = async (): Promise<string[]> => {
+    await apiDelay();
+    const localData = localStorage.getItem(BANNERS_KEY);
+    return localData ? JSON.parse(localData) : BANNER_IMAGES;
+};
+
+export const saveBanners = async (banners: string[]): Promise<void> => {
+    await apiDelay();
+    localStorage.setItem(BANNERS_KEY, JSON.stringify(banners));
+};
+
+// --- PRODUCT FUNCTIONS ---
+
+export const saveProduct = async (product: Product): Promise<void> => {
+    await apiDelay();
+    const products = JSON.parse(localStorage.getItem(PRODUCTS_KEY) || '[]');
+    const index = products.findIndex((p: Product) => p.id === product.id);
+    if (index !== -1) {
+        products[index] = product;
+    } else {
+        products.push(product);
+    }
+    localStorage.setItem(PRODUCTS_KEY, JSON.stringify(products));
+};
+
+export const deleteProduct = async (id: string): Promise<void> => {
+    await apiDelay();
+    let products = JSON.parse(localStorage.getItem(PRODUCTS_KEY) || '[]');
+    products = products.filter((p: Product) => p.id !== id);
+    localStorage.setItem(PRODUCTS_KEY, JSON.stringify(products));
+};
+
+
 // --- SERVICE FUNCTIONS ---
 
 export const initializeData = async (): Promise<void> => {
     await apiDelay();
+    // Initialization logic can be added here if needed in the future
 };
 
 const simulateTracking = (order: Order): Order => {
@@ -227,4 +263,16 @@ export const authenticateUser = async (identifier: string): Promise<User> => {
     const user = users.find((u: User) => u.email === identifier || u.mobile === identifier);
     if (!user) throw new Error("User not found");
     return user;
+};
+
+export const updateUser = async (updatedUser: User): Promise<User> => {
+    await apiDelay();
+    const users = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
+    const index = users.findIndex((u: User) => u.id === updatedUser.id);
+    if (index !== -1) {
+        users[index] = updatedUser;
+        localStorage.setItem(USERS_KEY, JSON.stringify(users));
+        return updatedUser;
+    }
+    throw new Error("User not found for update");
 };
