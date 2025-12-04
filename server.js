@@ -7,8 +7,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-Cashfree.XClientId = '114321026a5f66183345bd82ee50123411';
-Cashfree.XClientSecret = 'cfsk_ma_prod_4fed9c52cb45cf5972e9a3b11e7bacde_d081651e';
+Cashfree.XClientId = process.env.CASHFREE_CLIENT_ID;
+Cashfree.XClientSecret = process.env.CASHFREE_CLIENT_SECRET;
 Cashfree.XEnvironment = Cashfree.Environment.PRODUCTION;
 
 app.post('/api/payment/cashfree/initiate', async (req, res) => {
