@@ -1,6 +1,6 @@
-const express = require('express');
-const cors = require('cors');
-const { Cashfree } = require('cashfree-pg');
+import express from 'express';
+import cors from 'cors';
+import { Cashfree } from 'cashfree-pg';
 
 const app = express();
 
@@ -26,6 +26,12 @@ app.post('/api/payment/cashfree/initiate', async (req, res) => {
                 return_url: 'https://flipkart3-wq38.onrender.com/order/success?order_id={order_id}',
             }
         };
+
+        const cashfree = new Cashfree({
+            TENV: Cashfree.TENV.PRODUCTION,
+            clientId: process.env.CASHFREE_CLIENT_ID,
+            clientSecret: process.env.CASHFREE_CLIENT_SECRET,
+        });
 
         const response = await cashfree.orders.create(request);
         res.json(response);
