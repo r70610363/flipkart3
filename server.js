@@ -11,8 +11,14 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
-// Corrected path for serving static files from the root
 app.use(express.static(path.join(__dirname, 'dist')));
+
+// Initialize Cashfree credentials outside the handlers
+// to avoid re-instantiation on every request.
+const cashfree = new Cashfree({
+    clientId: process.env.CASHFREE_CLIENT_ID,
+    clientSecret: process.env.CASHFREE_CLIENT_SECRET,
+});
 
 app.post('/api/payment/cashfree/initiate', async (req, res) => {
     try {
@@ -24,20 +30,41 @@ app.post('/api/payment/cashfree/initiate', async (req, res) => {
             order_id,
             customer_details,
             order_meta: {
-                return_url: 'https://flipkart3-wq38.onrender.com/order/success?order_id={order_id}',
-            }
+                // Updated return_url to match the React Router hash format
+                return_url: `https://flipkart3-wq38.onrender.com/#/order-success/${order_id}`,
+            },
+            order_note: `Order ${order_id} for Flipkart-Clone`
         };
 
-        const cashfree = new Cashfree({
-            clientId: process.env.CASHFREE_CLIENT_ID,
-            clientSecret: process.env.CASHFREE_CLIENT_SECRET,
+        const response = await cashfree.orders.create(request);
+        // Send back only what's needed: the session ID for the checkout SDK
+        res.json({ success: true, payment_session_id: response.payment_session_id });
+
+    } catch (error) {
+        console.error("Cashfree Initiation Error", error);
+        res.status(500).json({ success: false, message: "Payment initiation failed" });
+    }
+});
+
+// NEW ENDPOINT for verifying the payment status from the server-side
+app.get('/api/payment/cashfree/verify/:orderId', async (req, res) => {
+    try {
+        const { orderId } = req.params;
+
+        // Use the same cashfree instance to fetch order details
+        const order = await cashfree.orders.get(orderId);
+
+        // Send back the crucial status information to the frontend
+        res.json({
+            success: true,
+            order_id: order.order_id,
+            order_status: order.order_status, // e.g., 'PAID', 'ACTIVE', 'EXPIRED'
+            customer_details: order.customer_details,
         });
 
-        const response = await cashfree.orders.create(request);
-        res.json(response);
     } catch (error) {
-        console.error("Cashfree Error", error);
-        res.status(500).json({ success: false, message: "Payment initiation failed" });
+        console.error("Cashfree Verification Error", error);
+        res.status(500).json({ success: false, message: "Payment verification failed" });
     }
 });
 
@@ -46,5 +73,6 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
-const PORT = process.env.PORT || 5000;
+// Using Render's port or a default
+const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

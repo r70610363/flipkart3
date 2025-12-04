@@ -61,7 +61,7 @@ export interface CartItem extends Product {
   selectedColor?: string;
 }
 
-export type OrderStatus = 'Ordered' | 'Packed' | 'Shipped' | 'Out for Delivery' | 'Delivered' | 'Cancelled';
+export type OrderStatus = 'Pending' | 'Ordered' | 'Packed' | 'Shipped' | 'Out for Delivery' | 'Delivered' | 'Cancelled';
 
 export interface TrackingEvent {
   status: OrderStatus;
