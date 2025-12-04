@@ -1,13 +1,12 @@
 
-
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ChevronRight, Heart, Star, Clock, Timer } from 'lucide-react';
+import { ChevronRight, Heart, Star, Clock, Timer, ServerCrash, Loader } from 'lucide-react';
 import { useShop } from '../context/ShopContext';
 import { CATEGORIES } from '../constants';
 
 export const Home: React.FC = () => {
-  const { products, setFilters, banners } = useShop();
+  const { products, setFilters, banners, isLoading, error } = useShop();
   const trendingProducts = products.filter(p => p.trending).slice(0, 5);
   const mobileDeals = products.filter(p => p.category === 'Mobiles').slice(0, 5);
   
@@ -101,6 +100,32 @@ export const Home: React.FC = () => {
     { name: 'HRX', id: 'hrx', imgUrl: 'https://images.unsplash.com/photo-1539185441755-769473a23570?auto=format&fit=crop&w=400&q=80' }
   ];
 
+  if (isLoading) {
+    return (
+        <div className="flex flex-col items-center justify-center min-h-[60vh] text-slate-500">
+            <Loader className="w-12 h-12 animate-spin mb-4 text-[#2874f0]" />
+            <p className="text-lg font-medium">Loading great deals...</p>
+            <p className="text-sm">Please wait a moment.</p>
+        </div>
+    );
+  }
+
+  if (error) {
+    return (
+        <div className="flex flex-col items-center justify-center min-h-[60vh] text-red-500 bg-red-50 p-8">
+            <ServerCrash className="w-16 h-16 mb-4" />
+            <h2 className="text-2xl font-bold mb-2">Oops! Something went wrong.</h2>
+            <p className="text-center max-w-md mb-6">{error}</p>
+            <button 
+                onClick={() => window.location.reload()} 
+                className="bg-red-500 text-white font-bold py-2 px-6 rounded hover:bg-red-600 transition-colors"
+            >
+                Try Again
+            </button>
+        </div>
+    );
+  }
+
   return (
     <div className="pb-8 bg-[#f1f3f6] min-h-screen">
       
@@ -183,85 +208,83 @@ export const Home: React.FC = () => {
       </div>
 
       {/* QUICK DEALS SECTION (Ends in 30 mins) */}
-      <div className="px-2 md:px-3 mb-3">
-        <div className="bg-white shadow-sm p-4 md:p-6 border border-slate-100">
-           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 md:mb-6 border-b border-slate-100 pb-3 gap-2">
-              <div className="flex items-center gap-3">
-                 <h2 className="text-xl md:text-2xl font-bold text-slate-800">Quick Deals on Mobiles</h2>
-                 <div className="flex items-center gap-2 bg-red-50 text-red-600 px-3 py-1 rounded font-bold text-sm border border-red-100">
-                    <Timer className="w-4 h-4 animate-pulse" />
-                    <span>Ends in {formatTime(timeLeft)}</span>
-                 </div>
-              </div>
-              <button 
-                onClick={() => { setFilters(prev => ({ ...prev, category: 'Mobiles' })); navigate('/shop'); }}
-                className="bg-[#2874f0] text-white px-5 py-2 text-xs font-bold rounded-[2px] uppercase shadow-sm"
-              >
-                View All
-              </button>
-           </div>
-           
-           <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4">
-              {mobileDeals.map(product => (
-                 <Link key={product.id} to={`/product/${product.id}`} className="group border border-slate-200 rounded-[4px] p-3 hover:shadow-lg transition-all bg-white text-center flex flex-col items-center">
-                    <div className="h-[140px] w-full mb-3 flex items-center justify-center overflow-hidden">
-                       <img src={product.image} alt={product.title} className="max-h-full max-w-full object-contain group-hover:scale-110 transition-transform duration-300" />
-                    </div>
-                    <h3 className="text-sm font-medium text-slate-800 line-clamp-2 leading-tight mb-2 group-hover:text-[#2874f0]">{product.title}</h3>
-                    <div className="mt-auto">
-                        <div className="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded inline-block mb-1">Extra ₹2000 Off</div>
-                        <div className="font-bold text-base text-slate-900">₹{product.price.toLocaleString('en-IN')}</div>
-                    </div>
-                 </Link>
-              ))}
-           </div>
+       {mobileDeals.length > 0 && (
+        <div className="px-2 md:px-3 mb-3">
+            <div className="bg-white shadow-sm p-4 md:p-6 border border-slate-100">
+               <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 md:mb-6 border-b border-slate-100 pb-3 gap-2">
+                  <div className="flex items-center gap-3">
+                     <h2 className="text-xl md:text-2xl font-bold text-slate-800">Quick Deals on Mobiles</h2>
+                     <div className="flex items-center gap-2 bg-red-50 text-red-600 px-3 py-1 rounded font-bold text-sm border border-red-100">
+                        <Timer className="w-4 h-4 animate-pulse" />
+                        <span>Ends in {formatTime(timeLeft)}</span>
+                     </div>
+                  </div>
+                  <button 
+                    onClick={() => { setFilters(prev => ({ ...prev, category: 'Mobiles' })); navigate('/shop'); }}
+                    className="bg-[#2874f0] text-white px-5 py-2 text-xs font-bold rounded-[2px] uppercase shadow-sm"
+                  >
+                    View All
+                  </button>
+               </div>
+               
+               <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4">
+                  {mobileDeals.map(product => (
+                     <Link key={product.id} to={`/product/${product.id}`} className="group border border-slate-200 rounded-[4px] p-3 hover:shadow-lg transition-all bg-white text-center flex flex-col items-center">
+                        <div className="h-[140px] w-full mb-3 flex items-center justify-center overflow-hidden">
+                           <img src={product.image} alt={product.title} className="max-h-full max-w-full object-contain group-hover:scale-110 transition-transform duration-300" />
+                        </div>
+                        <h3 className="text-sm font-medium text-slate-800 line-clamp-2 leading-tight mb-2 group-hover:text-[#2874f0]">{product.title}</h3>
+                        <div className="mt-auto">
+                            <div className="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded inline-block mb-1">Extra ₹2000 Off</div>
+                            <div className="font-bold text-base text-slate-900">₹{product.price.toLocaleString('en-IN')}</div>
+                        </div>
+                     </Link>
+                  ))}
+               </div>
+            </div>
         </div>
-      </div>
+      )}
 
       {/* 3. Deal of the Day (Blue Split Layout) */}
-      <div className="px-2 md:px-3 mb-3">
-        <div className="bg-white shadow-sm flex flex-col md:flex-row h-auto md:h-[360px] overflow-hidden relative">
-          
-          {/* Left Title Card (Blue Gradient) */}
-          <div className="md:w-[240px] p-6 flex flex-col items-center justify-end text-center bg-[url('https://images.unsplash.com/photo-1550009158-9ebf69173e03?auto=format&fit=crop&w=400&q=80')] bg-cover bg-center relative flex-shrink-0 min-h-[140px]">
-             <div className="absolute inset-0 bg-gradient-to-b from-blue-500/80 to-blue-900/90"></div>
-             <div className="z-10 mt-auto mb-6 relative">
-                <h2 className="text-3xl font-normal text-white mb-2 leading-tight drop-shadow-md">Best of<br/>Electronics</h2>
-                <Link to="/shop" className="bg-[#2874f0] text-white px-5 py-2.5 text-sm font-bold shadow-lg rounded-[2px] hover:bg-white hover:text-[#2874f0] transition-all inline-block border border-white/20">
-                  VIEW ALL
-                </Link>
-             </div>
-          </div>
+       {trendingProducts.length > 0 && (
+        <div className="px-2 md:px-3 mb-3">
+            <div className="bg-white shadow-sm flex flex-col md:flex-row h-auto md:h-[360px] overflow-hidden relative">
+              
+              {/* Left Title Card (Blue Gradient) */}
+              <div className="md:w-[240px] p-6 flex flex-col items-center justify-end text-center bg-[url('https://images.unsplash.com/photo-1550009158-9ebf69173e03?auto=format&fit=crop&w=400&q=80')] bg-cover bg-center relative flex-shrink-0 min-h-[140px]">
+                 <div className="absolute inset-0 bg-gradient-to-b from-blue-500/80 to-blue-900/90"></div>
+                 <div className="z-10 mt-auto mb-6 relative">
+                    <h2 className="text-3xl font-normal text-white mb-2 leading-tight drop-shadow-md">Best of<br/>Electronics</h2>
+                    <Link to="/shop" className="bg-[#2874f0] text-white px-5 py-2.5 text-sm font-bold shadow-lg rounded-[2px] hover:bg-white hover:text-[#2874f0] transition-all inline-block border border-white/20">
+                      VIEW ALL
+                    </Link>
+                 </div>
+              </div>
 
-          {/* Product Slider */}
-          <div className="flex-1 overflow-x-auto no-scrollbar p-4 md:p-6 flex items-center bg-white">
-             <div className="flex gap-4 md:gap-8 min-w-max">
-               {trendingProducts.map(product => (
-                 <Link key={product.id} to={`/product/${product.id}`} className="w-[160px] md:w-[200px] group text-center flex flex-col items-center cursor-pointer">
-                    <div className="h-[180px] w-full mb-3 relative overflow-hidden">
-                       <img src={product.image} alt={product.title} className="h-full w-full object-contain group-hover:scale-110 transition-transform duration-300" />
-                    </div>
-                    <h3 className="text-[14px] font-medium text-slate-800 truncate w-full px-1 mb-1">{product.title}</h3>
-                    <div className="text-green-700 text-[14px] font-medium mb-1">From ₹{product.price.toLocaleString('en-IN')}</div>
-                    <div className="text-slate-400 text-[13px]">Grab Now!</div>
-                 </Link>
-               ))}
-               
-                {/* Add more visual items to fill slider if specific trending count is low */}
-                {trendingProducts.length < 4 && trendingProducts.map((product, i) => (
-                 <Link key={product.id + 'dup' + i} to={`/product/${product.id}`} className="w-[160px] md:w-[200px] group text-center flex flex-col items-center cursor-pointer">
-                    <div className="h-[180px] w-full mb-3 relative overflow-hidden">
-                       <img src={product.image} alt={product.title} className="h-full w-full object-contain group-hover:scale-110 transition-transform duration-300" />
-                    </div>
-                    <h3 className="text-[14px] font-medium text-slate-800 truncate w-full px-1 mb-1">{product.title}</h3>
-                    <div className="text-green-700 text-[14px] font-medium mb-1">Min. 50% Off</div>
-                    <div className="text-slate-400 text-[13px]">Best Seller</div>
-                 </Link>
-               ))}
-             </div>
-          </div>
+              {/* Product Slider */}
+              <div className="flex-1 overflow-x-auto no-scrollbar p-4 md:p-6 flex items-center bg-white">
+                 <div className="flex gap-4 md:gap-8 min-w-max">
+                   {trendingProducts.map(product => (
+                     <Link key={product.id} to={`/product/${product.id}`} className="w-[160px] md:w-[200px] group text-center flex flex-col items-center cursor-pointer">
+                        <div className="h-[180px] w-full mb-3 relative overflow-hidden">
+                           <img src={product.image} alt={product.title} className="h-full w-full object-contain group-hover:scale-110 transition-transform duration-300" />
+                        </div>
+                        <h3 className="text-[14px] font-medium text-slate-800 truncate w-full px-1 mb-1">{product.title}</h3>
+                        <div className="text-green-700 text-[14px] font-medium mb-1">From ₹{product.price.toLocaleString('en-IN')}</div>
+                        <div className="text-slate-400 text-[13px]">Grab Now!</div>
+                     </Link>
+                   ))}
+                 </div>
+              </div>
+            </div>
         </div>
-      </div>
+      )}
+      
+      {products.length === 0 && !isLoading && !error && (
+        <div className="text-center py-20">
+          <p className="text-xl text-slate-500">No products found at the moment.</p>
+        </div>
+      )}
 
       {/* 4. Ad Banners Grid (3 Column) - Interactive */}
       <div className="px-2 md:px-3 mb-3">

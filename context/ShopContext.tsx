@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Product, User, CartItem, FilterState, Review, Address, Order, Notification } from '../types';
 import { 
@@ -23,6 +22,10 @@ interface ShopContextType {
   banners: string[];
   updateBanners: (banners: string[]) => void;
   
+  // New State
+  isLoading: boolean;
+  error: string | null;
+
   // Admin functions
   adminOrders: Order[];
   updateOrder: (id: string, status: any) => void;
@@ -87,23 +90,36 @@ export const ShopProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [shippingAddress, setShippingAddress] = useState<Address | null>(null);
   
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   // Notification State
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
   // ASYNC Data Loading
   useEffect(() => {
     const load = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
         await initializeData();
         const prods = await fetchProducts();
-        setProducts(prods);
         const ban = await fetchBanners();
-        setBanners(ban);
         const ords = await fetchOrders();
-        setAdminOrders(ords);
+        
+        if (prods) setProducts(prods);
+        if (ban) setBanners(ban);
+        if (ords) setAdminOrders(ords);
+
+      } catch (err: any) {
+          console.error("Failed to load initial data:", err);
+          setError("Could not load store data. Please check your connection and try again.");
+      } finally {
+          setIsLoading(false);
+      }
     };
     load();
     
-    // Load Local Persisted State (Cart/Wishlist)
     const savedCart = localStorage.getItem(CART_KEY);
     if (savedCart) try { setCart(JSON.parse(savedCart)); } catch (e) {}
 
@@ -127,7 +143,6 @@ export const ShopProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // Persistence
   useEffect(() => { localStorage.setItem(CART_KEY, JSON.stringify(cart)); }, [cart]);
   useEffect(() => { localStorage.setItem(WISHLIST_KEY, JSON.stringify(wishlist)); }, [wishlist]);
-  // Note: CHECKOUT_KEY is handled manually in prepareCheckout to ensure sync saving
 
   // Filter Logic
   const filteredProducts = products.filter(p => {
@@ -199,7 +214,6 @@ export const ShopProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const prepareCheckout = (items: CartItem[]) => {
       setCheckoutItems(items);
-      // Synchronously save to local storage to prevent race condition during navigation
       localStorage.setItem(CHECKOUT_KEY, JSON.stringify(items));
   };
 
@@ -212,7 +226,7 @@ export const ShopProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }));
       setCheckoutItems([]);
       localStorage.removeItem(CHECKOUT_KEY);
-      refreshOrders(); // Fetch new orders immediately
+      refreshOrders();
   };
 
   const updateBanners = (newBanners: string[]) => {
@@ -247,7 +261,6 @@ export const ShopProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setNotifications(prev => prev.map(n => ({ ...n, unread: false })));
   };
 
-  // Admin Helpers
   const updateOrder = async (id: string, status: any) => {
     await updateOrderStatus(id, status);
     refreshOrders();
@@ -291,7 +304,6 @@ export const ShopProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const closeLoginModal = () => setIsLoginModalOpen(false);
   const saveAddress = (addr: Address) => setShippingAddress(addr);
 
-  // Derived State for User Orders
   const userOrders = user ? adminOrders.filter(o => o.userId === user.id) : [];
 
   return (
@@ -300,6 +312,7 @@ export const ShopProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       products, cart, addToCart, removeFromCart, updateQuantity, clearCart,
       filters, setFilters, filteredProducts, refreshProducts,
       banners, updateBanners,
+      isLoading, error, // Pass down new state
       adminOrders, userOrders, refreshOrders, updateOrder, addProduct, removeProduct, addReview,
       updateUserProfile,
       isLoginModalOpen, openLoginModal, closeLoginModal,
