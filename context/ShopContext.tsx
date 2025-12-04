@@ -22,7 +22,6 @@ interface ShopContextType {
   banners: string[];
   updateBanners: (banners: string[]) => void;
   
-  // New State
   isLoading: boolean;
   error: string | null;
 
@@ -51,10 +50,10 @@ interface ShopContextType {
   shippingAddress: Address | null;
   saveAddress: (addr: Address) => void;
   
-  // Selective Checkout Logic
   checkoutItems: CartItem[];
   prepareCheckout: (items: CartItem[]) => void;
   completeOrder: () => void;
+  createNewOrder: (paymentMethod: string, totalAmount: number) => Promise<string | null>;
 
   // Wishlist
   wishlist: Product[];
@@ -229,6 +228,29 @@ export const ShopProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       refreshOrders();
   };
 
+  const createNewOrder = async (paymentMethod: string, totalAmount: number): Promise<string | null> => {
+    if (!user || !shippingAddress) return null;
+
+    const newOrder: Omit<Order, 'id'> = {
+        userId: user.id,
+        items: checkoutItems,
+        total: totalAmount,
+        status: 'Placed',
+        date: new Date().toISOString(),
+        shippingAddress: shippingAddress,
+        paymentMethod: paymentMethod,
+        updates: [{ status: 'Placed', timestamp: new Date().toISOString() }]
+    };
+    
+    try {
+        const created = await createOrder(newOrder);
+        return created.id;
+    } catch (e) {
+        console.error("Failed to create order:", e);
+        return null;
+    }
+  };
+
   const updateBanners = (newBanners: string[]) => {
     apiSaveBanners(newBanners);
     setBanners(newBanners);
@@ -312,12 +334,12 @@ export const ShopProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       products, cart, addToCart, removeFromCart, updateQuantity, clearCart,
       filters, setFilters, filteredProducts, refreshProducts,
       banners, updateBanners,
-      isLoading, error, // Pass down new state
+      isLoading, error, 
       adminOrders, userOrders, refreshOrders, updateOrder, addProduct, removeProduct, addReview,
       updateUserProfile,
       isLoginModalOpen, openLoginModal, closeLoginModal,
       shippingAddress, saveAddress,
-      checkoutItems, prepareCheckout, completeOrder,
+      checkoutItems, prepareCheckout, completeOrder, createNewOrder,
       wishlist, toggleWishlist,
       notifications, addNotification, markAllNotificationsRead
     }}>

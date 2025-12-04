@@ -1,23 +1,40 @@
-import React, { useEffect } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useShop } from '../context/ShopContext';
-import { ShieldCheck, ArrowLeft } from 'lucide-react';
+import { ShieldCheck, ArrowLeft, CreditCard, Wallet, IndianRupee, Truck, Loader2 } from 'lucide-react';
 
-const UnavailableOption: React.FC<{title: string}> = ({ title }) => (
-    <div className="border-b border-slate-100 bg-slate-50 opacity-60">
-        <label className="flex items-center gap-4 p-4 cursor-not-allowed">
-            <input type="radio" name="pm" className="mt-1 w-4 h-4" disabled />
-            <div className="flex-1">
-                <span className="font-medium text-slate-600">{title}</span>
-                <p className="text-xs text-red-500 font-medium mt-1">Temporarily unavailable</p>
+const PaymentOption: React.FC<{
+    title: string;
+    value: string;
+    icon: React.ReactNode;
+    selectedMethod: string | null;
+    onSelect: (value: string) => void;
+}> = ({ title, value, icon, selectedMethod, onSelect }) => (
+    <div className={`border-b border-slate-200 transition-colors ${selectedMethod === value ? 'bg-blue-50' : 'bg-white hover:bg-slate-50'}`}>
+        <label className="flex items-center gap-4 p-4 cursor-pointer">
+            <input
+                type="radio"
+                name="paymentMethod"
+                value={value}
+                checked={selectedMethod === value}
+                onChange={() => onSelect(value)}
+                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 focus:ring-2"
+            />
+            <div className="flex items-center gap-3">
+                {icon}
+                <span className="font-medium text-slate-700">{title}</span>
             </div>
         </label>
     </div>
 );
 
+
 export const Payment: React.FC = () => {
-  const { checkoutItems, shippingAddress } = useShop();
+  const { checkoutItems, shippingAddress, user, addNotification, completeOrder, createNewOrder } = useShop();
   const navigate = useNavigate();
+  const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
       if (!shippingAddress || checkoutItems.length === 0) {
@@ -30,6 +47,43 @@ export const Payment: React.FC = () => {
   const grossTotal = subtotal + discount;
   const shipping = subtotal > 500 ? 0 : 50;
   const total = subtotal + shipping;
+  
+  const paymentOptions = [
+    { title: 'Paytm', value: 'Paytm', icon: <Wallet className="w-5 h-5 text-blue-500" /> },
+    { title: 'PhonePe', value: 'PhonePe', icon: <Wallet className="w-5 h-5 text-purple-600" /> },
+    { title: 'Google Pay', value: 'GooglePay', icon: <Wallet className="w-5 h-5 text-green-500" /> },
+    { title: 'UPI', value: 'UPI', icon: <IndianRupee className="w-5 h-5 text-slate-600" /> },
+    { title: 'Debit Card', value: 'DebitCard', icon: <CreditCard className="w-5 h-5 text-slate-600" /> },
+    { title: 'Credit Card', value: 'CreditCard', icon: <CreditCard className="w-5 h-5 text-slate-600" /> },
+    { title: 'Cash on Delivery', value: 'COD', icon: <Truck className="w-5 h-5 text-slate-600" /> },
+  ];
+
+  const handlePayment = async () => {
+    if (!selectedMethod || !user || !shippingAddress) return;
+    setIsProcessing(true);
+
+    // Simulate payment processing delay
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    const orderId = await createNewOrder(selectedMethod, total);
+
+    if (orderId) {
+        completeOrder(); // Clear cart and checkout state
+        addNotification(
+            "Order Placed Successfully!",
+            `Your order #${orderId} is confirmed.`,
+            `/track-order/${orderId}`
+        );
+        navigate(`/order-success/${orderId}`);
+    } else {
+        addNotification(
+            "Order Failed",
+            "There was an issue placing your order. Please try again.",
+            "/cart"
+        );
+    }
+    setIsProcessing(false);
+  };
 
   return (
     <div className="min-h-screen bg-[#f1f3f6] pb-20 md:pb-8 font-sans page-animate">
@@ -41,28 +95,36 @@ export const Payment: React.FC = () => {
             </div>
 
             <div className="flex flex-col lg:flex-row gap-4 mt-2 md:mt-4">
-                 
                  <div className="flex-1">
                     <div className="bg-white shadow-sm rounded-[2px] overflow-hidden border border-slate-100">
                         <div className="p-3 bg-[#2874f0] text-white font-medium text-sm uppercase tracking-wide">
                             Payment Options
                         </div>
 
-                        <UnavailableOption title="Paytm" />
-                        <UnavailableOption title="PhonePe" />
-                        <UnavailableOption title="Google Pay" />
-                        <UnavailableOption title="UPI" />
-                        <UnavailableOption title="Debit Card" />
-                        <UnavailableOption title="Credit Card" />
-                        <UnavailableOption title="Cash on Delivery" />
+                        {paymentOptions.map(opt => (
+                            <PaymentOption 
+                                key={opt.value}
+                                {...opt}
+                                selectedMethod={selectedMethod}
+                                onSelect={setSelectedMethod}
+                            />
+                        ))}
                     </div>
 
                     <div className="bg-white shadow-lg mt-4 p-4 flex justify-end">
                         <button 
-                            disabled={true}
-                            className="bg-[#fb641b] text-white font-bold py-3 px-10 rounded-[2px] text-sm uppercase shadow-sm w-full md:w-auto disabled:opacity-50 cursor-not-allowed"
+                            onClick={handlePayment}
+                            disabled={!selectedMethod || isProcessing}
+                            className="bg-[#fb641b] text-white font-bold py-3 px-10 rounded-[2px] text-sm uppercase shadow-sm w-full md:w-auto disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                         >
-                            Continue
+                            {isProcessing ? (
+                                <>
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                    Processing...
+                                </>
+                            ) : (
+                                'Continue'
+                            )}
                         </button>
                     </div>
 
