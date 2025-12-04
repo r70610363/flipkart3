@@ -42,7 +42,6 @@ const ADMIN_MOBILES = ['9999999999', '7891906445', '6378041283'];
 
 export const initializeData = async (): Promise<void> => {
     await apiDelay();
-    // Initialization logic can be added here if needed in the future
 };
 
 const simulateTracking = (order: Order): Order => {
@@ -77,7 +76,6 @@ history.push({
             description: 'Dispatched from warehouse.'
         });
     }
-    // ... (rest of the tracking logic)
 
     const currentStatus = history[history.length - 1].status;
     return { ...order, trackingHistory: history.reverse(), status: currentStatus };
@@ -86,8 +84,6 @@ history.push({
 export const fetchProducts = async (): Promise<Product[]> => {
     await apiDelay();
     const localData = localStorage.getItem(PRODUCTS_KEY);
-    // Since mock generation is removed, ensure you have a way to populate products,
-    // perhaps via an admin interface or a seeded database.
     return localData ? JSON.parse(localData) : [];
 };
 
@@ -169,7 +165,10 @@ export const initiatePayment = async (amount: number, orderId: string, email: st
                 customer_phone: mobile,
             }
         });
-        return response;
+        return {
+            success: response.success,
+            paymentSessionId: response.payment_session_id
+        };
     } catch (error) {
         console.error("Payment initiation failed:", error);
         return { success: false };
