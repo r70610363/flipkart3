@@ -1,0 +1,79 @@
+
+[
+  {
+    "id": "1",
+    "title": "iPhone 15 Pro",
+    "description": "The latest iPhone with a powerful A17 Bionic chip and a stunning ProMotion display.",
+    "price": 999,
+    "originalPrice": 1099,
+    "category": "Mobiles",
+    "brand": "Apple",
+    "images": [
+      "https://rukminim2.flixcart.com/image/416/416/xif0q/mobile/2/y/x/-original-imagtc3k6vscx5g7.jpeg?q=70&crop=false",
+      "https://rukminim2.flixcart.com/image/416/416/xif0q/mobile/s/h/z/-original-imagtc3k9g2xg2xu.jpeg?q=70&crop=false",
+      "https://rukminim2.flixcart.com/image/416/416/xif0q/mobile/k/d/o/-original-imagtc3kfhmppzav.jpeg?q=70&crop=false",
+      "https://rukminim2.flixcart.com/image/416/416/xif0q/mobile/f/a/a/-original-imagtc3kknshzape.jpeg?q=70&crop=false",
+      "https://rukminim2.flixcart.com/image/416/416/xif0q/mobile/z/f/a/-original-imagtc3krzsfs8pe.jpeg?q=70&crop=false"
+    ],
+    "rating": 4.8,
+    "reviewsCount": 1250,
+    "reviews": [],
+    "stock": 100,
+    "colors": ["Black", "Silver", "Gold"],
+    "specifications": {
+      "Display": "6.1-inch Super Retina XDR display with ProMotion",
+      "Chip": "A17 Bionic chip",
+      "Camera": "Pro camera system (48MP Main, Ultra Wide, Telephoto)"
+    }
+  },
+  {
+    "id": "2",
+    "title": "Samsung Galaxy S24 Ultra",
+    "description": "Experience the new standard of mobile with Galaxy AI. ",
+    "price": 1299,
+    "originalPrice": 1399,
+    "category": "Mobiles",
+    "brand": "Samsung",
+    "images": [
+      "https://rukminim2.flixcart.com/image/416/416/xif0q/mobile/g/z/r/-original-imahyvchwfrk3s5s.jpeg?q=70&crop=false",
+      "https://rukminim2.flixcart.com/image/416/416/xif0q/mobile/y/t/g/-original-imahyvchztja2ffn.jpeg?q=70&crop=false",
+      "https://rukminim2.flixcart.com/image/416/416/xif0q/mobile/j/o/l/-original-imahyvchsvghbntr.jpeg?q=70&crop=false",
+      "https://rukminim2.flixcart.com/image/416/416/xif0q/mobile/i/q/h/-original-imahyvcheornbzaa.jpeg?q=70&crop=false",
+      "https://rukminim2.flixcart.com/image/416/416/xif0q/mobile/6/e/x/-original-imahyvchrmxfjbbs.jpeg?q=70&crop=false"
+    ],
+    "rating": 4.9,
+    "reviewsCount": 980,
+    "reviews": [],
+    "stock": 80,
+    "colors": ["Phantom Black", "Phantom White"],
+    "specifications": {
+      "Display": "6.8-inch Dynamic AMOLED 2X",
+      "Chip": "Snapdragon 8 Gen 3 for Galaxy",
+      "Camera": "200MP Wide-angle Camera"
+    }
+  },
+  {
+    "id": "3",
+    "title": "Google Pixel 8 Pro",
+    "description": "The most helpful phone, with an amazing camera and Google AI.",
+    "price": 899,
+    "originalPrice": 949,
+    "category": "Mobiles",
+    "brand": "Google",
+    "images": [
+      "https://rukminim2.flixcart.com/image/416/416/xif0q/mobile/t/p/c/-original-imagtwh6mj33hhz9.jpeg?q=70&crop=false",
+      "https://rukminim2.flixcart.com/image/416/416/xif0q/mobile/s/y/s/-original-imagtwh6zgrbfg9y.jpeg?q=70&crop=false",
+      "https://rukminim2.flixcart.com/image/416/416/xif0q/mobile/v/a/d/-original-imagtwh6vhhapzrh.jpeg?q=70&crop=false"
+    ],
+    "rating": 4.7,
+    "reviewsCount": 1500,
+    "reviews": [],
+    "stock": 120,
+    "colors": ["Obsidian", "Porcelain", "Bay"],
+    "specifications": {
+      "Display": "6.7-inch Super Actua display",
+      "Chip": "Google Tensor G3",
+      "Camera": "Pro-level triple rear camera system"
+    }
+  }
+]

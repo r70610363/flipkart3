@@ -77,7 +77,16 @@ export const deleteProduct = async (id: string): Promise<void> => {
 
 export const initializeData = async (): Promise<void> => {
     await apiDelay();
-    // Initialization logic can be added here if needed in the future
+    const localProducts = localStorage.getItem(PRODUCTS_KEY);
+    if (!localProducts || JSON.parse(localProducts).length === 0) {
+        try {
+            const response = await fetch('/products.json'); 
+            const products = await response.json();
+            localStorage.setItem(PRODUCTS_KEY, JSON.stringify(products));
+        } catch (error) {
+            console.error("Failed to fetch initial product data:", error);
+        }
+    }
 };
 
 const simulateTracking = (order: Order): Order => {
