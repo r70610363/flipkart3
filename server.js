@@ -23,7 +23,7 @@ app.post('/api/payment/cashfree/initiate', async (req, res) => {
             order_meta: {
                 // Return url is where cashfree will redirect the user after payment
                 // This should be a url on your frontend application
-                return_url: 'https://flipkart-clone-70d37.web.app/order/success?order_id={order_id}',
+                return_url: 'https://flipkart3-wq38.onrender.com/order/success?order_id={order_id}',
             }
         };
 
