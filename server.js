@@ -11,12 +11,8 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, '../dist')));
-
-// The following lines were removed as they are incorrect for cashfree-pg v5 and caused the crash.
-// Cashfree.XClientId = process.env.CASHFREE_CLIENT_ID;
-// Cashfree.XClientSecret = process.env.CASHFREE_CLIENT_SECRET;
-// Cashfree.XEnvironment = Cashfree.Environment.PRODUCTION;
+// Corrected path for serving static files from the root
+app.use(express.static(path.join(__dirname, 'dist')));
 
 app.post('/api/payment/cashfree/initiate', async (req, res) => {
     try {
@@ -28,13 +24,10 @@ app.post('/api/payment/cashfree/initiate', async (req, res) => {
             order_id,
             customer_details,
             order_meta: {
-                // Return url is where cashfree will redirect the user after payment
-                // This should be a url on your frontend application
                 return_url: 'https://flipkart3-wq38.onrender.com/order/success?order_id={order_id}',
             }
         };
 
-        // Correctly initialize the Cashfree instance for v5
         const cashfree = new Cashfree({
             clientId: process.env.CASHFREE_CLIENT_ID,
             clientSecret: process.env.CASHFREE_CLIENT_SECRET,
@@ -48,8 +41,9 @@ app.post('/api/payment/cashfree/initiate', async (req, res) => {
     }
 });
 
+// Corrected path for the catch-all route
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../dist', 'index.html'));
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
 const PORT = process.env.PORT || 5000;
